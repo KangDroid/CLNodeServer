@@ -1,4 +1,4 @@
-package com.kangdroid.node.nodeserver
+package com.kangdroid.node
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
