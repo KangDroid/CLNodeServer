@@ -1,6 +1,7 @@
 package com.kangdroid.node.api
 
 import com.kangdroid.node.component.DeviceInfo
+import com.kangdroid.node.data.dto.ImageResponseDto
 import com.kangdroid.node.service.SystemExecutorService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.SocketUtils
@@ -27,7 +28,7 @@ class DeviceApiController {
     }
 
     @PostMapping("/api/node/image")
-    fun createImage(): String {
+    fun createImage(): ImageResponseDto {
         return systemExecutorService.createImage()
     }
 }
