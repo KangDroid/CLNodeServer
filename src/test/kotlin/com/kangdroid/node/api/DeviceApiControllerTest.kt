@@ -35,4 +35,17 @@ class DeviceApiControllerTest {
         assertThat(tmpResponseEntity.body).isNotEqualTo(null)
         assertThat(tmpResponseEntity.body?.length).isNotEqualTo(0)
     }
+
+    @Test
+    fun isGetPortWorking() {
+        // Let
+        val url: String = "$baseUrl:$port/api/node/port"
+        // Do work
+        val tmpResponseEntity: ResponseEntity<String> = testRestTemplate.getForEntity(url, String::class.java)
+
+        // Assert
+        assertThat(tmpResponseEntity.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(tmpResponseEntity.body).isNotEqualTo(null)
+        println("The Avail port: ${tmpResponseEntity.body}")
+    }
 }
