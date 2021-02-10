@@ -1,5 +1,6 @@
 package com.kangdroid.node.service
 
+import com.kangdroid.node.data.dto.AliveResponseDto
 import com.kangdroid.node.data.dto.ImageResponseDto
 import org.springframework.stereotype.Service
 import org.springframework.util.SocketUtils
@@ -12,6 +13,20 @@ import java.util.*
 
 @Service
 class SystemExecutorService {
+    fun isServerAlive(): AliveResponseDto {
+        val response: AliveResponseDto = AliveResponseDto()
+
+        response.isDockerServerRunning = isDockerServiceRunning().also {
+            response.errorMessage = if (!it) {
+                "Dockerd Service[Backend Docker Engine] is Not Running on node System!"
+            } else {
+                ""
+            }
+        }
+
+        return response
+    }
+
     fun createImage(): ImageResponseDto {
         val availPort: String = "${SocketUtils.findAvailableTcpPort()}"
         val command: Array<String> = arrayOf(
@@ -48,6 +63,27 @@ class SystemExecutorService {
                 containerId = hash,
                 errorMessage = errorMessage
         )
+    }
+
+    private fun isDockerServiceRunning(): Boolean {
+        val command: Array<String> = arrayOf(
+                "pidof",
+                "dockerd"
+        )
+
+        val process: Process = Runtime.getRuntime().exec(command)
+
+        val stdOut: BufferedReader = BufferedReader(InputStreamReader(process.inputStream))
+        var s: String?
+        var pidOutput: String = "Error"
+        while (true) {
+            s = stdOut.readLine()
+            println(s)
+            if (s == null) break
+            pidOutput = s
+        }
+
+        return (pidOutput != "Error")
     }
 
     private fun getSystemIPAddress(): String? {

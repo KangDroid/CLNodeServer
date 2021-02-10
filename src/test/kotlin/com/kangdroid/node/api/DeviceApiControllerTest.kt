@@ -1,5 +1,6 @@
 package com.kangdroid.node.api
 
+import com.kangdroid.node.data.dto.AliveResponseDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.runner.RunWith
@@ -47,5 +48,20 @@ class DeviceApiControllerTest {
         assertThat(tmpResponseEntity.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(tmpResponseEntity.body).isNotEqualTo(null)
         println("The Avail port: ${tmpResponseEntity.body}")
+    }
+
+    @Test
+    fun isServerAliveWorkWell() {
+        // Let
+        val url: String = "$baseUrl:$port/api/alive"
+        // Do work
+        val tmpResponseEntity: ResponseEntity<AliveResponseDto> = testRestTemplate.getForEntity(url, AliveResponseDto::class.java)
+
+        // Assert
+        assertThat(tmpResponseEntity.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(tmpResponseEntity.body).isNotEqualTo(null)
+
+        val aliveResponse: AliveResponseDto = tmpResponseEntity.body!! // Assert above
+        assertThat(aliveResponse.errorMessage).isEqualTo("")
     }
 }

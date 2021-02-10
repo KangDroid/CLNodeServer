@@ -1,6 +1,7 @@
 package com.kangdroid.node.api
 
 import com.kangdroid.node.component.DeviceInfo
+import com.kangdroid.node.data.dto.AliveResponseDto
 import com.kangdroid.node.data.dto.ImageResponseDto
 import com.kangdroid.node.service.SystemExecutorService
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,6 +19,11 @@ class DeviceApiController {
 
     @Autowired
     private lateinit var systemExecutorService: SystemExecutorService
+
+    @GetMapping("/api/alive")
+    fun getServerAlive(): AliveResponseDto {
+        return systemExecutorService.isServerAlive()
+    }
 
     @GetMapping("/api/node/load")
     fun getLoad(): String = deviceInfo.getLoadPercentage()
