@@ -9,9 +9,9 @@ package com.kangdroid.node.data.dto
  * containerId for Docker Container Id
  */
 class ImageResponseDto(
-        var targetIpAddress: String,
-        var targetPort: String,
-        var containerId: String,
+        var targetIpAddress: String = "",
+        var targetPort: String = "",
+        var containerId: String = "",
         var regionLocation: String = "",
         var errorMessage: String = "",
 )

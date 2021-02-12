@@ -2,8 +2,12 @@ package com.kangdroid.node.service
 
 import com.kangdroid.node.data.dto.AliveResponseDto
 import com.kangdroid.node.data.dto.ImageResponseDto
+import com.kangdroid.node.data.dto.docker.*
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.util.SocketUtils
+import org.springframework.web.client.RestTemplate
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.InetAddress
@@ -13,6 +17,9 @@ import java.util.*
 
 @Service
 class SystemExecutorService {
+    private val baseUrl: String = "http://127.0.0.1:2375/v1.40"
+    private val restTemplate: RestTemplate = RestTemplate()
+
     fun isServerAlive(): AliveResponseDto {
         val response: AliveResponseDto = AliveResponseDto()
 
@@ -28,40 +35,55 @@ class SystemExecutorService {
     }
 
     fun createImage(): ImageResponseDto {
-        val availPort: String = "${SocketUtils.findAvailableTcpPort()}"
-        val command: Array<String> = arrayOf(
-                "docker",
-                "run",
-                "-p",
-                "$availPort:22",
-                "-dit",
-                "ubuntu:testssh"
+        val createUrl: String = "$baseUrl/containers/create"
+        val availPort: String = SocketUtils.findAvailableTcpPort().toString()
+        val requestDocker: MainRequest = MainRequest(
+                image = "ubuntu:testssh",
+                openStdin = true,
+                tty = true,
+                hostConfig = HostConfig(
+                        PortBindings(
+                                listOf(HostInnerBindings(
+                                        hostIp = "",
+                                        hostPort = availPort
+                                ))
+                        )
+                )
         )
-        val process: Process = Runtime.getRuntime().exec(command)
 
-        val stdOut: BufferedReader = BufferedReader(InputStreamReader(process.inputStream))
-
-        println("The STDOUT")
-        var s: String? = null
-        var hash: String = "Error"
-        while (true) {
-            s = stdOut.readLine()
-            println(s)
-            if (s == null) break
-            hash = s
+        // CreateImage
+        val createResponse: ResponseEntity<CreateResponseDto> =
+                restTemplate.postForEntity(createUrl, requestDocker, CreateResponseDto::class.java)
+        if (createResponse.statusCode != HttpStatus.CREATED) {
+            return ImageResponseDto(
+                    errorMessage = "Image Creation - Server responded with: ${createResponse.statusCode}"
+            )
         }
 
-        var errorMessage: String = ""
-        val ipAddress: String = getSystemIPAddress() ?: run {
-            errorMessage += "Cannot find IP Address of Compute Node."
-            ""
+        val creationResponseBody: CreateResponseDto = createResponse.body ?: return ImageResponseDto(
+                errorMessage = "Image Creation - Server did not responded with body."
+        )
+
+        // Image Start Service
+        val startUrl: String = "$baseUrl/containers/${creationResponseBody.Id}/start"
+        val startResponseBody: ResponseEntity<Void> =
+                restTemplate.postForEntity(startUrl, null, Void::class.java)
+
+        if (startResponseBody.statusCode != HttpStatus.NO_CONTENT) {
+            return ImageResponseDto(
+                    errorMessage = "Image Start - Image Creation succeed, but Image Start responded with: ${startResponseBody.statusCode}"
+            )
         }
+
+        val ipAddress: String = getSystemIPAddress() ?: return ImageResponseDto(
+                errorMessage = "Cannot find IP Address of Compute Node."
+        )
 
         return ImageResponseDto(
                 targetIpAddress = ipAddress,
                 targetPort = availPort,
-                containerId = hash,
-                errorMessage = errorMessage
+                containerId = creationResponseBody.Id,
+                errorMessage = ""
         )
     }
 
