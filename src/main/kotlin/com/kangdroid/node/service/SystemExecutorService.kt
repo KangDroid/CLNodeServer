@@ -1,8 +1,10 @@
 package com.kangdroid.node.service
 
+import com.kangdroid.node.configuration.DockerConfigurationComponent
 import com.kangdroid.node.data.dto.AliveResponseDto
 import com.kangdroid.node.data.dto.ImageResponseDto
 import com.kangdroid.node.data.dto.docker.*
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -17,7 +19,8 @@ import java.util.*
 
 @Service
 class SystemExecutorService {
-    private val baseUrl: String = "http://127.0.0.1:2375/v1.40"
+    @Autowired
+    private lateinit var dockerConfigurationComponent: DockerConfigurationComponent
     private val restTemplate: RestTemplate = RestTemplate()
 
     fun isServerAlive(): AliveResponseDto {
@@ -35,7 +38,7 @@ class SystemExecutorService {
     }
 
     fun createImage(): ImageResponseDto {
-        val createUrl: String = "$baseUrl/containers/create"
+        val createUrl: String = "${dockerConfigurationComponent.serverFinalAddress}/containers/create"
         val availPort: String = SocketUtils.findAvailableTcpPort().toString()
         val requestDocker: MainRequest = MainRequest(
                 image = "ubuntu:testssh",
@@ -65,7 +68,7 @@ class SystemExecutorService {
         )
 
         // Image Start Service
-        val startUrl: String = "$baseUrl/containers/${creationResponseBody.Id}/start"
+        val startUrl: String = "${dockerConfigurationComponent.serverFinalAddress}/containers/${creationResponseBody.Id}/start"
         val startResponseBody: ResponseEntity<Void> =
                 restTemplate.postForEntity(startUrl, null, Void::class.java)
 
