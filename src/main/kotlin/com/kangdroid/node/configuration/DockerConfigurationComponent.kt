@@ -7,9 +7,9 @@ import javax.annotation.PostConstruct
 @Component
 @ConfigurationProperties("kdr")
 class DockerConfigurationComponent {
-    private lateinit var serverIp: String
-    private lateinit var serverPort: String
-    private lateinit var dockerEngineVersion: String
+    lateinit var serverIp: String
+    lateinit var serverPort: String
+    lateinit var dockerEngineVersion: String
     var serverFinalAddress: String = ""
 
     @PostConstruct
