@@ -42,3 +42,8 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
+	val propertyLocation:String by project
+	this.args = listOf("--spring.config.location=${propertyLocation}")
+}
