@@ -3,6 +3,7 @@ package com.kangdroid.node.api
 import com.kangdroid.node.component.DeviceInfo
 import com.kangdroid.node.data.dto.AliveResponseDto
 import com.kangdroid.node.data.dto.ImageResponseDto
+import com.kangdroid.node.data.dto.RestartContainerRequestDto
 import com.kangdroid.node.service.SystemExecutorService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.SocketUtils
@@ -36,5 +37,10 @@ class DeviceApiController {
     @PostMapping("/api/node/image")
     fun createImage(): ImageResponseDto {
         return systemExecutorService.createImage()
+    }
+
+    @PostMapping("/api/node/restart")
+    fun restartContainer(@RequestBody restartContainerRequestDto: RestartContainerRequestDto): String {
+        return systemExecutorService.restartContainer(restartContainerRequestDto)
     }
 }

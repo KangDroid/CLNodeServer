@@ -3,6 +3,7 @@ package com.kangdroid.node.service
 import com.kangdroid.node.configuration.DockerConfigurationComponent
 import com.kangdroid.node.data.dto.AliveResponseDto
 import com.kangdroid.node.data.dto.ImageResponseDto
+import com.kangdroid.node.data.dto.RestartContainerRequestDto
 import com.kangdroid.node.data.dto.docker.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.util.SocketUtils
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.postForEntity
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.InetAddress
@@ -88,6 +90,16 @@ class SystemExecutorService {
                 containerId = creationResponseBody.Id,
                 errorMessage = ""
         )
+    }
+
+    fun restartContainer(restartContainerRequestDto: RestartContainerRequestDto): String {
+        val restartUrl: String = "${dockerConfigurationComponent.serverFinalAddress}/containers/${restartContainerRequestDto.containerId}/restart"
+        val responseEntity: ResponseEntity<String> = restTemplate.postForEntity(restartUrl, null ,String::class)
+        return if (responseEntity.statusCode != HttpStatus.NO_CONTENT) {
+            "Something went wrong when communicating docker engine!"
+        } else {
+            ""
+        }
     }
 
     private fun isDockerServiceRunning(): Boolean {
